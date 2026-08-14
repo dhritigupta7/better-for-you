@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getLiveProductBySlug } from "@/lib/products/queries";
+import {
+  getLiveProductBySlug,
+  getAllVisibleProductParams,
+} from "@/lib/products/queries";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import NutritionCard from "@/components/NutritionCard";
@@ -14,6 +17,14 @@ import BuyLink from "@/components/BuyLink";
 const SITE_URL = "https://foodpharmer.health";
 
 export const revalidate = 3600;
+
+// Prerender every visible product page to the edge cache. This route was the
+// second biggest source of function invocations (mostly Link prefetches hitting
+// a dynamic route). New products still render on demand and cache after the
+// first hit (dynamicParams defaults to true).
+export async function generateStaticParams() {
+  return getAllVisibleProductParams();
+}
 
 export async function generateMetadata({
   params,

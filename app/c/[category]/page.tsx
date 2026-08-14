@@ -1,7 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { getLiveProductsForCategory } from "@/lib/products/queries";
+import { createReaderClient } from "@/lib/supabase/server";
+import {
+  getLiveProductsForCategory,
+  getAllVisibleCategorySlugs,
+} from "@/lib/products/queries";
 import {
   previewCategoriesEnabled,
   STAGING_CATEGORY_ORDER_MIN,
@@ -14,6 +17,15 @@ import NewRibbon from "@/components/NewRibbon";
 
 export const revalidate = 3600;
 
+// Prerender every visible category so /c/[category] is served from the edge
+// cache, not rendered on demand (this route was the single biggest source of
+// function invocations). New/unlisted categories still render on demand
+// (dynamicParams defaults to true) and cache after the first hit.
+export async function generateStaticParams() {
+  const slugs = await getAllVisibleCategorySlugs();
+  return slugs.map((category) => ({ category }));
+}
+
 const SITE_URL = "https://foodpharmer.health";
 
 export async function generateMetadata({
@@ -22,7 +34,7 @@ export async function generateMetadata({
   params: Promise<{ category: string }>;
 }) {
   const { category: slug } = await params;
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data: cat } = await sb
     .from("categories")
     .select("name, blurb, active")
@@ -58,7 +70,7 @@ export default async function CategoryPage({
   // "popcorn" is a wrapper parent with no products of its own.
   if (slug === "popcorn") redirect("/c/popcorn-whole-kernels");
 
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data: cat } = await sb
     .from("categories")
     .select("id, slug, name, blurb, active, display_order, curator_note")

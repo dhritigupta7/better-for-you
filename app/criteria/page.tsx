@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createReaderClient } from "@/lib/supabase/server";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -17,7 +17,7 @@ export const metadata = {
 };
 
 export default async function CriteriaPage() {
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data: categories } = await sb
     .from("categories")
     .select("id, slug, name, blurb")
