@@ -200,7 +200,10 @@ export default async function HomePage() {
                       styled <span> (HTML forbids nested anchors). */}
                   {isCompound ? (
                     <article className="bg-[color:var(--bg-elev)] overflow-hidden h-full flex flex-col">
-                      <Link href={`/c/${c.slug}`} className="block">
+                      {/* Category grid links prefetch every category route on
+                          each homepage load, a top Edge Request source. Pages
+                          are edge-cached, so on-click nav stays fast without it. */}
+                      <Link href={`/c/${c.slug}`} prefetch={false} className="block">
                         {cardHeader}
                       </Link>
                       <div className="px-5 sm:px-7 pb-5 sm:pb-7 flex-1 flex flex-col">
@@ -209,6 +212,7 @@ export default async function HomePage() {
                             <li className="border-b rule">
                               <Link
                                 href={`/c/${c.slug}`}
+                                prefetch={false}
                                 className="flex items-center justify-between gap-3 min-h-[52px] py-3 group/v"
                               >
                                 <span className="font-display text-lg sm:text-xl tracking-tight text-[color:var(--ink)] group-hover/v:text-[color:var(--accent-deep)] transition-colors whitespace-nowrap min-w-0">
@@ -227,6 +231,7 @@ export default async function HomePage() {
                             >
                               <Link
                                 href={`/c/${v.slug}`}
+                                prefetch={false}
                                 className="flex items-center justify-between gap-3 min-h-[52px] py-3 group/v"
                               >
                                 <span className="font-display text-lg sm:text-xl tracking-tight text-[color:var(--ink)] group-hover/v:text-[color:var(--accent-deep)] transition-colors whitespace-nowrap min-w-0">
@@ -244,6 +249,7 @@ export default async function HomePage() {
                   ) : (
                     <Link
                       href={`/c/${c.slug}`}
+                      prefetch={false}
                       className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[color:var(--ink)]"
                     >
                       <article className="bg-[color:var(--bg-elev)] overflow-hidden h-full flex flex-col">
