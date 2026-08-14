@@ -1,7 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
-import type { Database } from '@/lib/supabase/types';
 
 // Cookieless read-only client for PUBLIC catalog pages. Because it never touches
 // cookies(), routes that use it stay statically renderable (ISR via
@@ -16,7 +15,10 @@ export function createReaderClient() {
     isPreview && process.env.SUPABASE_SERVICE_ROLE_KEY
       ? process.env.SUPABASE_SERVICE_ROLE_KEY
       : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  return createSupabaseClient<Database>(
+  // No <Database> generic on purpose: createClient() below is also untyped
+  // (createServerClient without a generic), so this stays a drop-in replacement
+  // for the public read paths, including tables not in the generated types.
+  return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     key,
     { auth: { autoRefreshToken: false, persistSession: false } }
