@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createReaderClient } from "@/lib/supabase/server";
 import { visibleProductStatuses } from "@/lib/products/visibility";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -10,13 +10,24 @@ const SITE_URL = "https://foodpharmer.health";
 
 export const revalidate = 3600;
 
+// Prerender every non-excluded brand page to the edge cache instead of
+// rendering on demand. New brands still render on demand and cache after the
+// first hit (dynamicParams defaults to true).
+export async function generateStaticParams() {
+  const sb = createReaderClient();
+  const { data } = await sb.from("brands").select("slug, is_excluded");
+  return ((data ?? []) as { slug: string; is_excluded: boolean }[])
+    .filter((b) => !b.is_excluded)
+    .map((b) => ({ slug: b.slug }));
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data: brand } = await sb
     .from("brands")
     .select("name, website_url, is_excluded")
@@ -41,7 +52,7 @@ export default async function BrandPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const sb = await createClient();
+  const sb = createReaderClient();
 
   const { data: brand } = await sb
     .from("brands")

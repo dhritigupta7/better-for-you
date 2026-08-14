@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createReaderClient } from "@/lib/supabase/server";
 
 export default async function CriteriaBlock({
   categoryId,
@@ -15,7 +15,7 @@ export default async function CriteriaBlock({
 }) {
   if (categoryId == null) return null;
 
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data: rules } = await sb
     .from("category_rules")
     .select("id, code, description")

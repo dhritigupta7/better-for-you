@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createReaderClient } from "@/lib/supabase/server";
 import { getLiveCountByCategory } from "@/lib/products/queries";
 import { visibleCategoryOrFilter } from "@/lib/categories/visibility";
 import Link from "next/link";
@@ -33,7 +33,7 @@ const COMPOUNDS: {
 ];
 
 export default async function HomePage() {
-  const supabase = await createClient();
+  const supabase = createReaderClient();
   const { data: categories, error } = await supabase
     .from("categories")
     .select("id, slug, name, blurb, hero_image_url, display_order, is_new, active")

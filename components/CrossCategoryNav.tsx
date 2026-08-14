@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createReaderClient } from "@/lib/supabase/server";
 import { visibleCategoryOrFilter } from "@/lib/categories/visibility";
 
 /**
@@ -18,7 +18,7 @@ export default async function CrossCategoryNav({
 }: {
   currentSlug: string;
 }) {
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data } = await sb
     .from("categories")
     .select("id, slug, name, is_new")

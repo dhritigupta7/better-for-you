@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createReaderClient } from "@/lib/supabase/server";
 import { visibleProductStatuses } from "@/lib/products/visibility";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -36,7 +36,7 @@ type Row = {
 };
 
 export default async function BrandsIndexPage() {
-  const sb = await createClient();
+  const sb = createReaderClient();
 
   // Pull only brands that have at least one visible product, with the count
   // alongside so the index reads like a magazine contents page.

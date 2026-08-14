@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createReaderClient } from '@/lib/supabase/server';
 import { visibleProductStatuses } from '@/lib/products/visibility';
 import {
   previewCategoriesEnabled,
@@ -16,7 +16,7 @@ function categoryVisible(cat: { active?: boolean; display_order?: number | null 
 }
 
 export async function getLiveCountByCategory(): Promise<Map<number, number>> {
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data, error } = await sb
     .from('products')
     .select('category_id')
@@ -30,7 +30,7 @@ export async function getLiveCountByCategory(): Promise<Map<number, number>> {
 }
 
 export async function getLiveProductsForCategory(categorySlug: string) {
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data: cat } = await sb
     .from('categories')
     .select('id, active, display_order')
@@ -62,8 +62,45 @@ export async function getLiveProductsForCategory(categorySlug: string) {
   return rows;
 }
 
+// generateStaticParams source: every visible category slug. Lets /c/[category]
+// prerender to the edge cache instead of rendering on demand per request.
+export async function getAllVisibleCategorySlugs(): Promise<string[]> {
+  const sb = createReaderClient();
+  const { data } = await sb
+    .from('categories')
+    .select('slug, active, display_order');
+  return (data ?? [])
+    .filter((c: { active?: boolean; display_order?: number | null }) => categoryVisible(c))
+    .map((c: { slug: string }) => c.slug);
+}
+
+// generateStaticParams source: every visible product as a {category, slug} pair.
+// Env-aware via visibleProductStatuses()/categoryVisible() (staging includes
+// Draft + preview categories; prod only Live + active).
+export async function getAllVisibleProductParams(): Promise<
+  { category: string; slug: string }[]
+> {
+  const sb = createReaderClient();
+  const { data } = await sb
+    .from('products')
+    .select('slug, category:categories ( slug, active, display_order )')
+    .in('status', visibleProductStatuses() as string[]);
+  const out: { category: string; slug: string }[] = [];
+  for (const p of (data ?? []) as {
+    slug: string;
+    category:
+      | { slug: string; active?: boolean; display_order?: number | null }
+      | { slug: string; active?: boolean; display_order?: number | null }[]
+      | null;
+  }[]) {
+    const cat = Array.isArray(p.category) ? p.category[0] : p.category;
+    if (cat && categoryVisible(cat)) out.push({ category: cat.slug, slug: p.slug });
+  }
+  return out;
+}
+
 export async function getLiveProductBySlug(categorySlug: string, productSlug: string) {
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data: cat } = await sb
     .from('categories')
     .select('id, slug, name, blurb, active, display_order')

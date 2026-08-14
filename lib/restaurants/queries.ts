@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createReaderClient } from '@/lib/supabase/server';
 
 // Prod shows only Live restaurants; staging/preview also shows Draft (the
 // service-role client bypasses RLS there). Mirrors lib/products/visibility.
@@ -80,7 +80,7 @@ const RESTAURANT_DETAIL_FIELDS =
 // Visible restaurants that have at least one approved dish, with their approved
 // dish count. Ordered by display_order; grouping/filtering by city happens client-side.
 export async function getVisibleRestaurants(): Promise<RestaurantCard[]> {
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data: rs } = await sb
     .from('restaurants')
     .select(RESTAURANT_LIST_FIELDS)
@@ -121,7 +121,7 @@ export async function getVisibleRestaurants(): Promise<RestaurantCard[]> {
 }
 
 export async function getRestaurantBySlug(slug: string): Promise<RestaurantDetail | null> {
-  const sb = await createClient();
+  const sb = createReaderClient();
   const { data: r } = await sb
     .from('restaurants')
     .select(RESTAURANT_DETAIL_FIELDS)

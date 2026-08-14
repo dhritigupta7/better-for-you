@@ -1,12 +1,12 @@
 import { MetadataRoute } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createReaderClient } from "@/lib/supabase/server";
 import { getVisibleRestaurants } from "@/lib/restaurants/queries";
 import { citySlug } from "@/lib/restaurants/cities";
 
 const BASE_URL = "https://foodpharmer.health";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const sb = await createClient();
+  const sb = createReaderClient();
 
   const [{ data: cats }, { data: prods }, { data: brandsWithLive }] = await Promise.all([
     sb.from("categories").select("slug, created_at").eq("active", true),
