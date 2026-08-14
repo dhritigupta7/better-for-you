@@ -199,6 +199,10 @@ export default async function CategoryPage({
             <Link
               key={p.id}
               href={`/c/${slug}/${p.slug}`}
+              // Every product card prefetches its product route on viewport. The
+              // pages are edge-cached now, so on-click navigation is already
+              // fast; skip the prefetch to cut Edge Requests.
+              prefetch={false}
               className="bg-[color:var(--bg-elev)] overflow-hidden block group transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:hover:scale-[1.03] sm:hover:shadow-[0_24px_60px_-24px_rgba(0,0,0,0.28)]"
             >
               <div className="relative h-72 sm:h-80 flex items-center justify-center overflow-hidden">

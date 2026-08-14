@@ -55,6 +55,11 @@ export default async function CrossCategoryNav({
           <Link
             key={c.id}
             href={`/c/${c.slug}`}
+            // Cross-nav renders on every category + product page and links to
+            // every other category. Left on, each page view prefetches ~a dozen
+            // category routes (a top source of Edge Requests). These are
+            // secondary nav, so fetch on click instead.
+            prefetch={false}
             className="group shrink-0 inline-flex items-center gap-2 border rule bg-[color:var(--bg-elev)] px-5 py-3 font-display text-xl tracking-tight text-[color:var(--ink)] hover:border-[color:var(--accent-deep)] hover:text-[color:var(--accent-deep)] transition-colors whitespace-nowrap"
           >
             {c.name}
